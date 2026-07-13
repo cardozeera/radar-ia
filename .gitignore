@@ -1,0 +1,56 @@
+# Ignored files
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml
+
+# Next.js
+.next/
+out/
+
+# Build
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+ENV/
+
+# Env files
+.env
+.env.*
+
+# Virtual environment
+.venv/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+htmlcov/
+
+# Docker
+docker-compose.override.yml
+
+# Pytest
+.pytest_cache/
+
+# Misc
+.idea/
