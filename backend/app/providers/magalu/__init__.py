@@ -1,0 +1,1 @@
+"""Magalu provider package placeholder."""

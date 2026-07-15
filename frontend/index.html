@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Radar IA — Ofertas Reais</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1b2a;--panel2:#10263b;--soft:#17344f;--text:#eef6ff;--muted:#9fb4c8;--green:#27e1a3;--blue:#2b8cff;--yellow:#ffbf47;--red:#ff6b6b;--border:rgba(255,255,255,.09);--shadow:0 18px 50px rgba(0,0,0,.28);--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 8% 0%,rgba(43,140,255,.17),transparent 28%),radial-gradient(circle at 95% 4%,rgba(39,225,163,.1),transparent 28%),var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh}.sidebar{height:100vh;position:sticky;top:0;padding:24px 18px;border-right:1px solid var(--border);background:rgba(7,17,31,.93);backdrop-filter:blur(14px)}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px 25px}.mark{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-weight:1000;color:#03131c;background:linear-gradient(135deg,var(--green),var(--blue));box-shadow:var(--shadow)}.brand strong{display:block}.brand small{color:var(--muted)}
+.nav{display:grid;gap:8px}.nav button{border:0;background:transparent;color:var(--muted);font-weight:800;text-align:left;padding:13px 14px;border-radius:12px}.nav button.active,.nav button:hover{color:var(--text);background:linear-gradient(90deg,rgba(39,225,163,.14),rgba(43,140,255,.09))}
+.side-status{position:absolute;left:18px;right:18px;bottom:20px;padding:14px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(135deg,rgba(39,225,163,.11),rgba(43,140,255,.1))}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);margin-right:7px}
+main{padding:28px}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:24px}.top h1{margin:0;font-size:clamp(1.7rem,3vw,2.35rem)}.top p{margin:7px 0 0;color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:900;transition:.18s}.btn:hover{transform:translateY(-1px)}.primary{background:linear-gradient(135deg,var(--green),var(--blue));color:#03131c}.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border)}.danger{background:rgba(255,107,107,.12);color:#ff9a9a;border:1px solid rgba(255,107,107,.23)}.small{padding:8px 11px;font-size:.83rem}
+.page{display:none}.page.active{display:block}.grid{display:grid;gap:18px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:linear-gradient(180deg,rgba(16,38,59,.94),rgba(13,27,42,.94));border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.metric{padding:20px}.metric small{display:block;color:var(--muted);margin-bottom:8px}.metric strong{font-size:1.9rem}.metric span{display:block;margin-top:7px;font-size:.8rem;color:#8aefc4}
+.panel{padding:20px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.section-head h2,.panel h2{margin:0}.muted{color:var(--muted)}
+.searchbar{display:grid;grid-template-columns:1fr 160px 150px;gap:11px;margin-bottom:18px}input,select,textarea{width:100%;border:1px solid var(--border);background:#091725;color:var(--text);padding:12px;border-radius:11px;outline:none}textarea{resize:vertical;min-height:155px}input:focus,select:focus,textarea:focus{border-color:rgba(39,225,163,.48);box-shadow:0 0 0 3px rgba(39,225,163,.08)}
+.status{padding:12px 14px;border-radius:12px;margin-bottom:18px;background:rgba(43,140,255,.11);color:#c8ddff;border:1px solid rgba(43,140,255,.18)}
+.products{grid-template-columns:repeat(3,minmax(0,1fr))}.product{overflow:hidden}.product-img{height:220px;background:#fff;display:grid;place-items:center;overflow:hidden}.product-img img{width:100%;height:100%;object-fit:contain}.product-body{padding:17px}.product-body h3{font-size:1rem;min-height:48px;margin:0 0 10px}.price{font-size:1.45rem;font-weight:950}.old{color:var(--muted);text-decoration:line-through;font-size:.85rem;margin-left:7px}.score{float:right;padding:8px 10px;border-radius:10px;background:rgba(39,225,163,.14);color:#7aefbd;font-weight:950}.score.mid{background:rgba(255,191,71,.13);color:#ffd27a}.badges{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.badge{font-size:.74rem;font-weight:850;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.06);color:#c0d1df}.reason{font-size:.84rem;color:var(--muted);min-height:52px}.product-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.product-actions>*{flex:1;text-align:center;text-decoration:none}
+.detail{grid-template-columns:1fr 1fr}.detail-img{width:100%;height:390px;object-fit:contain;background:#fff;border-radius:14px}.breakdown{display:grid;gap:10px}.line{display:grid;grid-template-columns:1fr 60px;gap:10px;padding-bottom:9px;border-bottom:1px solid var(--border)}.notice{padding:14px;border-left:4px solid var(--yellow);border-radius:9px;background:rgba(255,191,71,.1);color:#ffe1a4}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:13px 11px;text-align:left;border-bottom:1px solid var(--border)}th{color:var(--muted);font-size:.76rem;text-transform:uppercase}.pill{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:.75rem;font-weight:900}.ok{background:rgba(39,225,163,.13);color:#7aefbd}.wait{background:rgba(255,191,71,.13);color:#ffd27a}
+.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}label{display:grid;gap:7px;color:var(--muted);font-size:.83rem;font-weight:800}.log{min-height:300px;padding:15px;border-radius:14px;background:#07131f;color:#b9cee0;font-family:ui-monospace,monospace;white-space:pre-wrap}
+.empty{grid-column:1/-1;text-align:center;padding:50px;color:var(--muted)}.toast{position:fixed;right:22px;bottom:22px;padding:13px 16px;border-radius:12px;background:#11283d;border:1px solid var(--border);box-shadow:var(--shadow);opacity:0;transform:translateY(10px);transition:.23s;z-index:20}.toast.show{opacity:1;transform:none}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(2,1fr)}.products{grid-template-columns:repeat(2,1fr)}.detail{grid-template-columns:1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}main{padding:16px 13px}.top{flex-direction:column}.metrics,.products,.form-grid,.searchbar{grid-template-columns:1fr}.product-img{height:250px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><div class="mark">R</div><div><strong>Radar IA</strong><small>Inteligência de ofertas</small></div></div>
+ <nav class="nav">
+  <button class="active" data-page="dashboard">⌂ Dashboard</button>
+  <button data-page="radar">⌁ Buscar ofertas</button>
+  <button data-page="watchlist">★ Watchlist</button>
+  <button data-page="historico">↗ Histórico</button>
+  <button data-page="gerador">✦ Gerador</button>
+  <button data-page="config">⚙ Configuração</button>
+ </nav>
+ <div class="side-status"><span class="dot"></span><strong id="apiState">API não testada</strong><br><small class="muted">Backend Radar IA</small></div>
+</aside>
+<main>
+ <div class="top">
+  <div><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">Visão geral da operação.</p></div>
+  <div class="actions"><button class="btn secondary" onclick="checkApi()">Testar conexão</button><button class="btn primary" onclick="showPage('radar')">Buscar oferta</button></div>
+ </div>
+
+ <section id="dashboard" class="page active">
+  <div class="grid metrics">
+   <div class="card metric"><small>Produtos salvos</small><strong id="mProducts">0</strong><span>Banco Supabase</span></div>
+   <div class="card metric"><small>Ofertas excelentes</small><strong id="mExcellent">0</strong><span>Nota 85 ou mais</span></div>
+   <div class="card metric"><small>Itens monitorados</small><strong id="mWatch">0</strong><span>Watchlist ativa</span></div>
+   <div class="card metric"><small>Buscas realizadas</small><strong id="mRuns">0</strong><span>Histórico do agente</span></div>
+  </div>
+  <div class="grid detail" style="margin-top:18px">
+   <div class="card panel"><div class="section-head"><div><h2>Melhores ofertas</h2><p class="muted">Maior Nota Radar.</p></div></div><div id="topOffers"></div></div>
+   <div class="card panel"><h2>Fluxo operacional</h2><p class="muted">O que já está preparado neste MVP.</p><div class="breakdown">
+    <div class="line"><span>Buscar no Mercado Livre</span><strong>✓</strong></div>
+    <div class="line"><span>Trazer imagem e link original</span><strong>✓</strong></div>
+    <div class="line"><span>Calcular Nota Radar</span><strong>✓</strong></div>
+    <div class="line"><span>Salvar no Supabase</span><strong>✓</strong></div>
+    <div class="line"><span>Watchlist e histórico</span><strong>✓</strong></div>
+    <div class="line"><span>Link afiliado manual</span><strong>✓</strong></div>
+   </div></div>
+  </div>
+ </section>
+
+ <section id="radar" class="page">
+  <div class="card panel searchbar">
+   <input id="query" value="tênis asics para quadra" placeholder="Digite o produto">
+   <select id="limit"><option value="12">12 resultados</option><option value="24">24 resultados</option><option value="36">36 resultados</option></select>
+   <button class="btn primary" onclick="searchProducts()">Buscar no ML</button>
+  </div>
+  <div id="searchStatus" class="status">Digite um produto e execute a busca.</div>
+  <div id="productGrid" class="grid products"></div>
+ </section>
+
+ <section id="detail" class="page">
+  <div class="grid detail">
+   <div class="card panel">
+    <img id="dImage" class="detail-img" alt="Produto">
+    <h2 id="dTitle">Produto</h2>
+    <div><span id="dPrice" class="price">—</span><span id="dOld" class="old"></span></div>
+    <div id="dBadges" class="badges"></div>
+    <div class="product-actions"><a id="dLink" class="btn primary" target="_blank" rel="noopener">Abrir no Mercado Livre</a><button class="btn secondary" onclick="copyOriginal()">Copiar URL</button><button class="btn secondary" onclick="addWatch()">Adicionar à watchlist</button></div>
+    <p class="notice">Confirme preço, estoque e variação na página original. Depois gere o link afiliado pela ferramenta oficial do Mercado Livre.</p>
+   </div>
+   <div class="card panel">
+    <div class="section-head"><div><h2>Nota Radar</h2><p class="muted">Pontuação explicável.</p></div><div id="dScore" class="score">0</div></div>
+    <div id="dBreakdown" class="breakdown"></div>
+    <h3>Recomendação</h3><p id="dReason" class="muted"></p>
+    <div class="product-actions"><button class="btn primary" onclick="prepareGenerator()">Gerar publicação</button><button class="btn secondary" onclick="saveCurrent()">Salvar produto</button></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="watchlist" class="page">
+  <div class="card panel"><div class="section-head"><div><h2>Watchlist</h2><p class="muted">Produtos que o agente deve acompanhar.</p></div><button class="btn primary small" onclick="runWatchlist()">Atualizar preços</button></div>
+   <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Preço atual</th><th>Última verificação</th><th>Status</th><th>Ação</th></tr></thead><tbody id="watchBody"></tbody></table></div>
+  </div>
+ </section>
+
+ <section id="historico" class="page">
+  <div class="card panel"><div class="section-head"><div><h2>Histórico de preços</h2><p class="muted">Registros coletados pelo Radar.</p></div><button class="btn secondary small" onclick="loadHistory()">Atualizar</button></div>
+   <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Preço</th><th>Preço anterior</th><th>Desconto</th><th>Data</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+  </div>
+ </section>
+
+ <section id="gerador" class="page">
+  <div class="grid detail">
+   <div class="card panel">
+    <h2>Dados da oferta</h2><br>
+    <label>Produto<input id="gProduct"></label><br>
+    <div class="grid form-grid"><label>Preço anterior<input id="gOld"></label><label>Preço atual<input id="gPrice"></label></div><br>
+    <label>Link afiliado<input id="gAffiliate" placeholder="Cole o link gerado no Mercado Livre"></label><br>
+    <label>Motivo<textarea id="gReason"></textarea></label><br>
+    <button class="btn primary" onclick="generateMessage()">Gerar mensagem</button>
+   </div>
+   <div class="card panel">
+    <label>Canal<select id="gChannel" onchange="generateMessage()"><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option></select></label><br>
+    <label>Mensagem<textarea id="gMessage" style="min-height:350px"></textarea></label><br>
+    <div class="actions"><button class="btn primary" onclick="copyMessage()">Copiar mensagem</button><button class="btn secondary" onclick="savePublication()">Salvar publicação</button></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="config" class="page">
+  <div class="grid detail">
+   <div class="card panel">
+    <h2>Conexão</h2><p class="muted">Informe a URL pública criada no Render.</p>
+    <label>URL do backend<input id="backendUrl" value="http://localhost:8000"></label><br>
+    <button class="btn primary" onclick="saveConfig()">Salvar e testar</button>
+   </div>
+   <div class="card panel">
+    <h2>Pesos da Nota Radar</h2><p class="muted">A soma deve ficar próxima de 100.</p>
+    <div class="grid form-grid">
+     <label>Avaliação<input id="wRating" type="number" value="25"></label><label>Vendas e avaliações<input id="wVolume" type="number" value="25"></label>
+     <label>Desconto<input id="wDiscount" type="number" value="25"></label><label>Frete grátis<input id="wShipping" type="number" value="15"></label>
+     <label>Reputação<input id="wSeller" type="number" value="10"></label><label>Nota mínima<input id="minScore" type="number" value="55"></label>
+    </div><br><button class="btn secondary" onclick="saveWeights()">Salvar pesos</button>
+   </div>
+  </div>
+ </section>
+</main>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+let products=[],current=null,stats={},watchlist=[],history=[];
+const meta={dashboard:["Dashboard","Visão geral da operação."],radar:["Radar de ofertas","Pesquise produtos reais no Mercado Livre."],detail:["Análise da oferta","Abra o anúncio, avalie e salve."],watchlist:["Watchlist","Monitore produtos específicos."],historico:["Histórico","Acompanhe a variação de preços."],gerador:["Gerador de publicação","Crie mensagens prontas para os canais."],config:["Configuração","Conecte frontend, backend e regras."]};
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function api(){return (localStorage.getItem("radar_backend")||"http://localhost:8000").replace(/\/$/,"")}
+function showPage(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===id));pageTitle.textContent=meta[id][0];pageSubtitle.textContent=meta[id][1];if(id==="dashboard")loadDashboard();if(id==="watchlist")loadWatchlist();if(id==="historico")loadHistory();window.scrollTo({top:0,behavior:"smooth"})}
+function money(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),2200)}
+async function request(path,opts={}){const r=await fetch(api()+path,{headers:{"Content-Type":"application/json",...(opts.headers||{})},...opts});if(!r.ok){let m=await r.text();throw new Error(m||`Erro ${r.status}`)}return r.json()}
+async function checkApi(){try{const d=await request("/health");apiState.textContent="API conectada";toast("Backend conectado.");return d}catch(e){apiState.textContent="API desconectada";toast("Falha: "+e.message);throw e}}
+async function searchProducts(){
+ const q=query.value.trim();if(!q)return;searchStatus.textContent="Buscando no Mercado Livre, enriquecendo dados e calculando notas...";
+ try{const d=await request(`/api/search?q=${encodeURIComponent(q)}&limit=${limit.value}`);products=d.results||[];searchStatus.textContent=`${products.length} ofertas retornadas. Busca registrada no Supabase.`;renderProducts()}catch(e){searchStatus.textContent="Erro na busca: "+e.message}
+}
+function renderProducts(){productGrid.innerHTML=products.length?products.map((p,i)=>`<article class="card product"><div class="product-img"><img src="${p.image_url||""}" alt="" onerror="this.style.display='none'"></div><div class="product-body"><span class="score ${p.score<85?"mid":""}">${p.score}</span><h3>${p.title}</h3><div><span class="price">${money(p.price)}</span>${p.original_price?`<span class="old">${money(p.original_price)}</span>`:""}</div><div class="badges"><span class="badge">${p.discount_percentage||0}% OFF</span><span class="badge">⭐ ${p.rating??"N/D"}</span><span class="badge">${p.sold_quantity||0} vendidos</span><span class="badge">${p.free_shipping?"Frete grátis":"Frete a consultar"}</span></div><p class="reason">${p.recommendation||"Revisão manual recomendada."}</p><div class="product-actions"><button class="btn secondary small" onclick="openProduct(${i})">Analisar</button><a class="btn primary small" href="${p.permalink}" target="_blank" rel="noopener">Abrir oferta</a></div></div></article>`).join(""):'<div class="card empty">Nenhum produto encontrado.</div>'}
+function openProduct(i){current=products[i];dImage.src=current.image_url||"";dTitle.textContent=current.title;dPrice.textContent=money(current.price);dOld.textContent=current.original_price?money(current.original_price):"";dLink.href=current.permalink;dScore.textContent=current.score;dBadges.innerHTML=`<span class="badge">${current.discount_percentage||0}% OFF</span><span class="badge">⭐ ${current.rating??"N/D"}</span><span class="badge">${current.review_count||0} avaliações</span><span class="badge">${current.sold_quantity||0} vendidos</span>`;const b=current.score_breakdown||{};dBreakdown.innerHTML=Object.entries(b).map(([k,v])=>`<div class="line"><span>${({"rating":"Avaliação","volume":"Volume","discount":"Desconto","shipping":"Frete","seller":"Vendedor"})[k]||k}</span><strong>${v}</strong></div>`).join("");dReason.textContent=current.recommendation||"";showPage("detail")}
+async function saveCurrent(){if(!current)return;try{await request("/api/products",{method:"POST",body:JSON.stringify(current)});toast("Produto salvo.")}catch(e){toast("Erro: "+e.message)}}
+async function addWatch(){if(!current)return;try{await request("/api/watchlist",{method:"POST",body:JSON.stringify({external_id:current.external_id,title:current.title,permalink:current.permalink,image_url:current.image_url})});toast("Adicionado à watchlist.")}catch(e){toast("Erro: "+e.message)}}
+async function loadDashboard(){try{const d=await request("/api/dashboard");mProducts.textContent=d.products||0;mExcellent.textContent=d.excellent||0;mWatch.textContent=d.watchlist||0;mRuns.textContent=d.search_runs||0;topOffers.innerHTML=(d.top_offers||[]).map(x=>`<div class="line"><span>${x.title}<br><small class="muted">${money(x.price)}</small></span><strong>${x.score}</strong></div>`).join("")||'<p class="muted">Faça a primeira busca para popular o painel.</p>'}catch(e){}}
+async function loadWatchlist(){try{const d=await request("/api/watchlist");watchlist=d.items||[];watchBody.innerHTML=watchlist.map(x=>`<tr><td>${x.title}</td><td>${money(x.last_price)}</td><td>${x.last_checked_at?new Date(x.last_checked_at).toLocaleString("pt-BR"):"Nunca"}</td><td><span class="pill ${x.active?"ok":"wait"}">${x.active?"Ativo":"Pausado"}</span></td><td><button class="btn danger small" onclick="removeWatch('${x.id}')">Remover</button></td></tr>`).join("")||'<tr><td colspan="5" class="muted">Nenhum produto monitorado.</td></tr>'}catch(e){toast("Erro: "+e.message)}}
+async function removeWatch(id){await request(`/api/watchlist/${id}`,{method:"DELETE"});loadWatchlist()}
+async function runWatchlist(){try{toast("Atualizando preços...");await request("/api/watchlist/run",{method:"POST"});await loadWatchlist();toast("Watchlist atualizada.")}catch(e){toast("Erro: "+e.message)}}
+async function loadHistory(){try{const d=await request("/api/history?limit=100");history=d.items||[];historyBody.innerHTML=history.map(x=>`<tr><td>${x.title}</td><td>${money(x.price)}</td><td>${x.original_price?money(x.original_price):"—"}</td><td>${x.discount_percentage||0}%</td><td>${new Date(x.collected_at).toLocaleString("pt-BR")}</td></tr>`).join("")||'<tr><td colspan="5" class="muted">Sem histórico.</td></tr>'}catch(e){toast("Erro: "+e.message)}}
+function prepareGenerator(){if(!current)return;gProduct.value=current.title;gOld.value=current.original_price?money(current.original_price):"";gPrice.value=money(current.price);gReason.value=current.recommendation||"";generateMessage();showPage("gerador")}
+function generateMessage(){const product=gProduct.value,old=gOld.value,price=gPrice.value,link=gAffiliate.value||"[COLE O LINK DE AFILIADO]",reason=gReason.value,ch=gChannel.value;let m="";if(ch==="whatsapp")m=`🎯 *ACHADO RADAR IA*\n\n🔥 *${product}*\n\n${old?`De: ~${old}~\n`:""}✅ *Por ${price}*\n\n💡 ${reason}\n\n🔗 Confira:\n${link}\n\n⚠️ Preço e estoque podem mudar.\n_Compras pelo link podem gerar comissão, sem custo adicional._`;else if(ch==="telegram")m=`🎯 ACHADO RADAR IA\n\n${product}\n${old?`De ${old} `:""}por ${price}\n\n${reason}\n\n${link}\n\nPreço e estoque sujeitos a alteração.`;else if(ch==="instagram")m=`🔥 OFERTA ENCONTRADA\n\n${product}\n${old?`De ${old} `:""}por ${price}\n\n${reason}\n\nLink nos stories/bio.\n#ofertas #radaria`;else m=`GANCHO: Achei uma oferta que merece atenção.\n\nPRODUTO: ${product}\nPREÇO: ${old?`de ${old} `:""}por ${price}\nARGUMENTO: ${reason}\nCTA: acesse o link indicado.`;gMessage.value=m}
+async function copyOriginal(){await navigator.clipboard.writeText(current.permalink);toast("URL original copiada.")}
+async function copyMessage(){await navigator.clipboard.writeText(gMessage.value);toast("Mensagem copiada.")}
+async function savePublication(){try{await request("/api/publications",{method:"POST",body:JSON.stringify({product_external_id:current?.external_id||null,channel:gChannel.value,content:gMessage.value,affiliate_url:gAffiliate.value||null,status:"draft"})});toast("Publicação salva.")}catch(e){toast("Erro: "+e.message)}}
+function saveConfig(){localStorage.setItem("radar_backend",backendUrl.value.replace(/\/$/,""));checkApi()}
+function weights(){return {rating:+wRating.value,volume:+wVolume.value,discount:+wDiscount.value,shipping:+wShipping.value,seller:+wSeller.value,min_score:+minScore.value}}
+async function saveWeights(){localStorage.setItem("radar_weights",JSON.stringify(weights()));try{await request("/api/settings/score",{method:"PUT",body:JSON.stringify(weights())});toast("Pesos salvos.")}catch(e){toast("Pesos locais salvos; backend não respondeu.")}}
+(function(){backendUrl.value=api();const w=JSON.parse(localStorage.getItem("radar_weights")||"null");if(w){wRating.value=w.rating;wVolume.value=w.volume;wDiscount.value=w.discount;wShipping.value=w.shipping;wSeller.value=w.seller;minScore.value=w.min_score}loadDashboard();checkApi().catch(()=>{})})()
+</script>
+</body>
+</html>
