@@ -596,3 +596,8 @@ class MercadoLivreProvider(BaseProvider):
             ),
             "brand": item.get("brand"),
         }
+        def get_authenticated_user(self) -> dict[str, Any]:
+    return self._request(
+        path="/users/me",
+        public_first=False,
+    )

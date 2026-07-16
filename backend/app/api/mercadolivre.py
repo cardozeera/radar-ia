@@ -19,3 +19,11 @@ def search_products(
         return {"query": q, "count": len(results), "results": results}
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+from typing import Any
+from ..providers.mercadolivre.client import MercadoLivreProvider
+
+@router.get("/me")
+def me() -> dict[str, Any]:
+    provider = MercadoLivreProvider()
+    return provider.get_authenticated_user()
