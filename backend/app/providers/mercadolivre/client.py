@@ -1,4 +1,4 @@
-"""Cliente da API do Mercado Livre com token salvo no Supabase."""
+"""Cliente da API do Mercado Livre com OAuth e diagnóstico detalhado."""
 
 from __future__ import annotations
 
@@ -13,6 +13,8 @@ from ..base import BaseProvider
 
 
 class MercadoLivreProvider(BaseProvider):
+    """Consulta e normaliza produtos da API do Mercado Livre."""
+
     name = "mercadolivre"
 
     def __init__(
@@ -24,17 +26,32 @@ class MercadoLivreProvider(BaseProvider):
         self._timeout = timeout
         self._db = SupabaseClient().get_client()
 
+        self._base_headers = {
+            "Accept": "application/json",
+            "User-Agent": "RadarIA-App/1.0",
+        }
+
     def search_products(
         self,
         query: str,
         limit: int = 10,
     ) -> list[dict[str, Any]]:
+        """
+        Busca produtos.
+
+        Primeiro tenta a busca pública. Caso receba 401 ou 403,
+        repete a chamada usando o access token salvo no Supabase.
+        """
+
+        safe_limit = max(1, min(limit, 50))
+
         payload = self._request(
-            "/sites/MLB/search",
+            path="/sites/MLB/search",
             params={
                 "q": query,
-                "limit": min(limit, 50),
+                "limit": safe_limit,
             },
+            public_first=True,
         )
 
         results = (
@@ -45,64 +62,116 @@ class MercadoLivreProvider(BaseProvider):
 
         offers: list[dict[str, Any]] = []
 
-        for item in results[:limit]:
-            try:
-                detail = self.get_product(item.get("id"))
-            except Exception:
-                detail = self._normalize_product(item)
+        for item in results[:safe_limit]:
+            external_id = item.get("id")
 
-            offers.append(detail)
+            if not external_id:
+                continue
+
+            try:
+                product = self.get_product(
+                    str(external_id)
+                )
+            except Exception:
+                product = self._normalize_product(item)
+
+            offers.append(product)
 
         return offers
 
-    def get_product(self, external_id: str) -> dict[str, Any]:
+    def get_product(
+        self,
+        external_id: str,
+    ) -> dict[str, Any]:
+        """Busca os detalhes de um anúncio."""
+
         product_payload = self._request(
-            f"/items/{external_id}"
+            path=f"/items/{external_id}",
+            public_first=True,
         )
-
-        reviews = self.get_reviews(external_id)
-
-        seller = {}
-
-        if product_payload.get("seller_id"):
-            seller = self.get_seller(
-                str(product_payload["seller_id"])
-            )
 
         normalized = self._normalize_product(
             product_payload
         )
 
-        normalized["reviews"] = reviews
-        normalized["seller"] = seller
+        reviews_payload = self.get_reviews(external_id)
+
+        if reviews_payload:
+            rating_average = reviews_payload.get(
+                "rating_average"
+            )
+
+            paging = reviews_payload.get("paging") or {}
+
+            if rating_average is not None:
+                try:
+                    normalized["rating"] = float(
+                        rating_average
+                    )
+                except (TypeError, ValueError):
+                    pass
+
+            try:
+                normalized["avaliacoes"] = int(
+                    paging.get("total") or 0
+                )
+            except (TypeError, ValueError):
+                normalized["avaliacoes"] = 0
+
+            normalized["reviews"] = (
+                reviews_payload.get("reviews") or []
+            )
+        else:
+            normalized["reviews"] = []
+
+        seller_id = product_payload.get("seller_id")
+
+        if seller_id:
+            try:
+                seller = self.get_seller(
+                    str(seller_id)
+                )
+            except Exception:
+                seller = {}
+
+            normalized["seller"] = seller
+
+            reputation = seller.get(
+                "power_seller_status"
+            )
+
+            if reputation:
+                normalized["reputacao"] = reputation
+        else:
+            normalized["seller"] = {}
 
         return normalized
 
     def get_reviews(
         self,
         external_id: str,
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
+        """Busca avaliações do produto, quando disponíveis."""
+
         try:
             payload = self._request(
-                f"/items/{external_id}/reviews"
+                path=f"/reviews/item/{external_id}",
+                public_first=True,
             )
-        except httpx.HTTPStatusError:
-            return []
+        except Exception:
+            return {}
 
-        if isinstance(payload, dict):
-            reviews = payload.get("reviews")
-
-            if isinstance(reviews, list):
-                return reviews
-
-        return []
+        return payload if isinstance(payload, dict) else {}
 
     def get_seller(
         self,
         seller_id: str,
     ) -> dict[str, Any]:
+        """Busca informações públicas do vendedor."""
+
         payload = self._request(
-            f"/users/{seller_id}"
+            path=f"/users/{seller_id}",
+            public_first=False,
         )
 
         if not isinstance(payload, dict):
@@ -115,59 +184,137 @@ class MercadoLivreProvider(BaseProvider):
         return {
             "id": payload.get("id"),
             "nickname": payload.get("nickname"),
-            "reputation": reputation,
             "status": payload.get("status"),
+            "power_seller_status": reputation.get(
+                "power_seller_status"
+            ),
+            "level_id": (
+                reputation.get("transactions") or {}
+            ).get("ratings"),
+            "raw_reputation": reputation,
         }
 
     def _request(
         self,
         path: str,
         params: dict[str, Any] | None = None,
+        public_first: bool = False,
     ) -> Any:
+        """
+        Executa uma requisição.
+
+        Para endpoints potencialmente públicos:
+        1. tenta sem token;
+        2. em 401/403, tenta autenticado.
+
+        Para endpoints protegidos:
+        1. usa token;
+        2. em 401, renova e repete.
+        """
+
+        if public_first:
+            response = self._send_get_request(
+                path=path,
+                params=params,
+                token=None,
+            )
+
+            if response.status_code not in (401, 403):
+                return self._parse_response(
+                    response=response,
+                    path=path,
+                    request_mode="public",
+                )
+
         token = self._get_access_token()
 
-        response = httpx.get(
-            f"{self._base_url}{path}",
+        response = self._send_get_request(
+            path=path,
             params=params,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/json",
-            },
-            timeout=self._timeout,
+            token=token,
         )
 
         if response.status_code == 401:
             token = self._refresh_access_token()
 
-            response = httpx.get(
+            response = self._send_get_request(
+                path=path,
+                params=params,
+                token=token,
+            )
+
+        return self._parse_response(
+            response=response,
+            path=path,
+            request_mode="authenticated",
+        )
+
+    def _send_get_request(
+        self,
+        path: str,
+        params: dict[str, Any] | None,
+        token: str | None,
+    ) -> httpx.Response:
+        """Envia uma requisição GET para a API."""
+
+        headers = self._base_headers.copy()
+
+        if token:
+            headers["Authorization"] = (
+                f"Bearer {token}"
+            )
+
+        try:
+            return httpx.get(
                 f"{self._base_url}{path}",
                 params=params,
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Accept": "application/json",
-                },
+                headers=headers,
                 timeout=self._timeout,
+                follow_redirects=True,
             )
-
-        response.raise_for_status()
-
-        return response.json()
-
-    def _get_access_token(self) -> str:
-        integration = self._get_integration()
-
-        access_token = (
-            integration.get("access_token") or ""
-        ).strip()
-
-        if not access_token:
+        except httpx.RequestError as exc:
             raise RuntimeError(
-                "Access token do Mercado Livre não encontrado."
+                "Falha de comunicação com a API do "
+                f"Mercado Livre em {path}: {exc}"
+            ) from exc
+
+    @staticmethod
+    def _parse_response(
+        response: httpx.Response,
+        path: str,
+        request_mode: str,
+    ) -> Any:
+        """Valida e converte a resposta da API."""
+
+        if response.status_code >= 400:
+            request_id = (
+                response.headers.get("x-request-id")
+                or response.headers.get(
+                    "x-correlation-id"
+                )
+                or ""
             )
 
-        return access_token
+            raise RuntimeError(
+                "Erro Mercado Livre: "
+                f"status={response.status_code}; "
+                f"mode={request_mode}; "
+                f"path={path}; "
+                f"request_id={request_id}; "
+                f"response={response.text}"
+            )
+
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise RuntimeError(
+                "O Mercado Livre retornou conteúdo "
+                f"inválido em {path}."
+            ) from exc
 
     def _get_integration(self) -> dict[str, Any]:
+        """Obtém a integração ativa no Supabase."""
+
         result = (
             self._db.table("integrations")
             .select("*")
@@ -179,15 +326,35 @@ class MercadoLivreProvider(BaseProvider):
 
         if not result.data:
             raise RuntimeError(
-                "Integração do Mercado Livre não encontrada."
+                "Integração ativa do Mercado Livre "
+                "não encontrada no Supabase."
             )
 
         return result.data[0]
 
-    def _refresh_access_token(self) -> str:
+    def _get_access_token(self) -> str:
+        """Obtém o access token atual."""
+
         integration = self._get_integration()
 
-        refresh_token = (
+        access_token = str(
+            integration.get("access_token") or ""
+        ).strip()
+
+        if not access_token:
+            raise RuntimeError(
+                "Access token do Mercado Livre "
+                "não encontrado."
+            )
+
+        return access_token
+
+    def _refresh_access_token(self) -> str:
+        """Renova o access token usando o refresh token."""
+
+        integration = self._get_integration()
+
+        refresh_token = str(
             integration.get("refresh_token") or ""
         ).strip()
 
@@ -203,51 +370,77 @@ class MercadoLivreProvider(BaseProvider):
 
         if not refresh_token:
             raise RuntimeError(
-                "Refresh token do Mercado Livre não encontrado."
+                "Refresh token do Mercado Livre "
+                "não encontrado."
             )
 
-        if not client_id or not client_secret:
+        if not client_id:
             raise RuntimeError(
-                "MELI_CLIENT_ID ou MELI_CLIENT_SECRET ausentes."
+                "MELI_CLIENT_ID não configurado."
             )
 
-        response = httpx.post(
-            f"{self._base_url}/oauth/token",
-            data={
-                "grant_type": "refresh_token",
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "refresh_token": refresh_token,
-            },
-            headers={
-                "Accept": "application/json",
-                "Content-Type": (
-                    "application/x-www-form-urlencoded"
-                ),
-            },
-            timeout=self._timeout,
-        )
+        if not client_secret:
+            raise RuntimeError(
+                "MELI_CLIENT_SECRET não configurado."
+            )
 
-        response.raise_for_status()
+        try:
+            response = httpx.post(
+                f"{self._base_url}/oauth/token",
+                data={
+                    "grant_type": "refresh_token",
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "refresh_token": refresh_token,
+                },
+                headers={
+                    **self._base_headers,
+                    "Content-Type": (
+                        "application/"
+                        "x-www-form-urlencoded"
+                    ),
+                },
+                timeout=self._timeout,
+            )
+        except httpx.RequestError as exc:
+            raise RuntimeError(
+                "Falha de comunicação ao renovar "
+                "o token do Mercado Livre."
+            ) from exc
 
-        token_data = response.json()
+        if response.status_code >= 400:
+            raise RuntimeError(
+                "Erro ao renovar token do Mercado Livre: "
+                f"status={response.status_code}; "
+                f"response={response.text}"
+            )
 
-        access_token = (
+        try:
+            token_data = response.json()
+        except ValueError as exc:
+            raise RuntimeError(
+                "Resposta inválida ao renovar o token."
+            ) from exc
+
+        access_token = str(
             token_data.get("access_token") or ""
         ).strip()
 
         if not access_token:
             raise RuntimeError(
-                "Mercado Livre não retornou novo access token."
+                "O Mercado Livre não retornou "
+                "um novo access token."
             )
+
+        new_refresh_token = str(
+            token_data.get("refresh_token")
+            or refresh_token
+        ).strip()
 
         self._db.table("integrations").update(
             {
                 "access_token": access_token,
-                "refresh_token": token_data.get(
-                    "refresh_token",
-                    refresh_token,
-                ),
+                "refresh_token": new_refresh_token,
                 "expires_in": token_data.get(
                     "expires_in"
                 ),
@@ -263,11 +456,14 @@ class MercadoLivreProvider(BaseProvider):
 
         return access_token
 
+    @staticmethod
     def _normalize_product(
-        self,
         item: dict[str, Any],
     ) -> dict[str, Any]:
+        """Converte o produto para o formato do Radar IA."""
+
         price = item.get("price")
+
         original_price = (
             item.get("original_price") or price
         )
@@ -276,28 +472,41 @@ class MercadoLivreProvider(BaseProvider):
             "discount_percentage"
         )
 
+        try:
+            price_float = float(price or 0)
+        except (TypeError, ValueError):
+            price_float = 0.0
+
+        try:
+            original_price_float = float(
+                original_price or price or 0
+            )
+        except (TypeError, ValueError):
+            original_price_float = price_float
+
         if (
             discount_percentage is None
-            and original_price
-            and price
-            and float(original_price) > 0
+            and original_price_float > 0
+            and price_float >= 0
         ):
-            discount_percentage = int(
-                round(
-                    (
-                        1
-                        - (
-                            float(price)
-                            / float(original_price)
-                        )
+            discount_percentage = round(
+                (
+                    1
+                    - (
+                        price_float
+                        / original_price_float
                     )
-                    * 100
                 )
+                * 100
             )
 
-        discount_percentage = int(
-            discount_percentage or 0
-        )
+        try:
+            discount_percentage = max(
+                0,
+                int(discount_percentage or 0),
+            )
+        except (TypeError, ValueError):
+            discount_percentage = 0
 
         shipping = item.get("shipping") or {}
         seller = item.get("seller") or {}
@@ -308,7 +517,20 @@ class MercadoLivreProvider(BaseProvider):
             or ""
         )
 
-        rating = item.get("rating")
+        if isinstance(seller_reputation, dict):
+            seller_reputation = (
+                seller_reputation.get(
+                    "power_seller_status"
+                )
+                or ""
+            )
+
+        try:
+            rating = float(
+                item.get("rating") or 0
+            )
+        except (TypeError, ValueError):
+            rating = 0.0
 
         review_count = (
             item.get("review_count")
@@ -321,19 +543,13 @@ class MercadoLivreProvider(BaseProvider):
                 review_count.get("total") or 0
             )
 
+        if isinstance(review_count, list):
+            review_count = len(review_count)
+
         try:
             review_count = int(review_count)
         except (TypeError, ValueError):
             review_count = 0
-
-        try:
-            rating = (
-                float(rating)
-                if rating is not None
-                else 0.0
-            )
-        except (TypeError, ValueError):
-            rating = 0.0
 
         try:
             sold_quantity = int(
@@ -343,9 +559,10 @@ class MercadoLivreProvider(BaseProvider):
             sold_quantity = 0
 
         return {
-            "external_id": (
+            "external_id": str(
                 item.get("id")
                 or item.get("external_id")
+                or ""
             ),
             "imagem": (
                 item.get("thumbnail")
@@ -358,15 +575,15 @@ class MercadoLivreProvider(BaseProvider):
                 or item.get("name")
                 or ""
             ),
-            "preco": float(price or 0),
-            "preco_original": float(
-                original_price or price or 0
-            ),
+            "preco": price_float,
+            "preco_original": original_price_float,
             "desconto": discount_percentage,
             "rating": rating,
             "avaliacoes": review_count,
             "vendidos": sold_quantity,
-            "reputacao": seller_reputation,
+            "reputacao": str(
+                seller_reputation or ""
+            ),
             "frete_gratis": bool(
                 shipping.get("free_shipping")
             ),
@@ -377,4 +594,5 @@ class MercadoLivreProvider(BaseProvider):
                 seller.get("id")
                 or item.get("seller_id")
             ),
+            "brand": item.get("brand"),
         }
