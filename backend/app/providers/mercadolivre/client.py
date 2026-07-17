@@ -31,6 +31,21 @@ class MercadoLivreProvider(BaseProvider):
             "User-Agent": "RadarIA-App/1.0",
         }
 
+    def get_authenticated_user(self) -> dict[str, Any]:
+        """Retorna os dados do usuário vinculado ao access token."""
+
+        payload = self._request(
+            path="/users/me",
+            public_first=False,
+        )
+
+        if not isinstance(payload, dict):
+            raise RuntimeError(
+                "Resposta inválida do endpoint /users/me."
+            )
+
+        return payload
+
     def search_products(
         self,
         query: str,
@@ -167,7 +182,7 @@ class MercadoLivreProvider(BaseProvider):
         self,
         seller_id: str,
     ) -> dict[str, Any]:
-        """Busca informações públicas do vendedor."""
+        """Busca informações do vendedor."""
 
         payload = self._request(
             path=f"/users/{seller_id}",
@@ -205,11 +220,11 @@ class MercadoLivreProvider(BaseProvider):
 
         Para endpoints potencialmente públicos:
         1. tenta sem token;
-        2. em 401/403, tenta autenticado.
+        2. em 401 ou 403, tenta autenticado.
 
         Para endpoints protegidos:
         1. usa token;
-        2. em 401, renova e repete.
+        2. em 401, renova o token e repete.
         """
 
         if public_first:
@@ -596,8 +611,3 @@ class MercadoLivreProvider(BaseProvider):
             ),
             "brand": item.get("brand"),
         }
-        def get_authenticated_user(self) -> dict[str, Any]:
-    return self._request(
-        path="/users/me",
-        public_first=False,
-    )
