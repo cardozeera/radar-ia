@@ -24,6 +24,14 @@ from typing import Any
 from ..providers.mercadolivre.client import MercadoLivreProvider
 
 @router.get("/me")
-def me() -> dict[str, Any]:
+def me() -> dict[str, object]:
     provider = MercadoLivreProvider()
-    return provider.get_authenticated_user()
+    user = provider.get_authenticated_user()
+
+    return {
+        "connected": True,
+        "id": user.get("id"),
+        "nickname": user.get("nickname"),
+        "site_id": user.get("site_id"),
+        "status": (user.get("status") or {}).get("site_status"),
+    }
